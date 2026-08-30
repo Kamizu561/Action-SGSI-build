@@ -89,6 +89,7 @@ jobs:
       - name: Make AB type GSI...
         if: ${{ github.event.inputs.SGSI_TYPE == 'AB' || github.event.inputs.SGSI_TYPE == 'BOTH' }}
         run: |
+          sed -i 's/from backports from backports/from backports/g' $GITHUB_WORKSPACE/Tool-SGSI-build/payload/update_payload/applier.py
           sudo bash $GITHUB_WORKSPACE/Tool-SGSI-build/make.sh AB << EOF
           ${{ github.event.inputs.ZIP_NAME }}
           y
