@@ -50,8 +50,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y git wget zip unzip curl axel
-          sudo apt-get install -y python3 python3-pip python-is-python3
-          sudo pip3 install protobuf
+          # Install Python 2 and the C-headers needed to build LZMA from source
+          sudo apt-get install -y python2 python2-dev liblzma-dev
+          
+          # Install pip for Python 2
+          curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
+          sudo python2 get-pip.py
+          
+          # Install older protobuf and the LZMA backport for Python 2
+          sudo python2 -m pip install protobuf==3.17.3 backports.lzma
 
       - name: Get the SGSI tool...
         run: |
@@ -72,9 +79,9 @@ jobs:
 
       - name: Configuration tool environment...
         run: |
-          # Dynamically replace all hardcoded 'python2' commands with 'python3'
-          find $GITHUB_WORKSPACE/Tool-SGSI-build -type f -name "*.sh" -exec sudo sed -i 's/python2/python3/g' {} +
-         
+          # Dynamically patch the tool's Python scripts to use the backported LZMA module
+          find $GITHUB_WORKSPACE/Tool-SGSI-build -type f -name "*.py" -exec sudo sed -i 's/import lzma/from backports import lzma/g' {} +
+          
           sudo sed -i 's/USE_MIRROR_FOR_PIP\=true/USE_MIRROR_FOR_PIP\=false/' $GITHUB_WORKSPACE/Tool-SGSI-build/setup.sh
           sudo bash $GITHUB_WORKSPACE/Tool-SGSI-build/setup.sh
           java -version
